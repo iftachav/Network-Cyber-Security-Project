@@ -62,14 +62,14 @@ def response_decorator(code):
     Args:
         code (int): http code that should indicate about success.
     """
-    def first_wrapper(func):
+    def function_wrapper(func):
         """
         wrapper to get the service function.
 
         Args:
             func (Function): a function object representing the API service function.
         """
-        def second_wrapper(*args, **kwargs):
+        def arguments_wrapper(*args, **kwargs):
             """
             Args:
                 args: function args
@@ -80,8 +80,8 @@ def response_decorator(code):
             """
             try:
                 return ApiResponse(response_body=func(*args, **kwargs), http_status_code=code).full_api_response
-            except Exception as e:
-                return ErrorResponse(str(e), e.error_http_code).full_api_response
-        return second_wrapper
-    return first_wrapper
+            except Exception as err:
+                return ErrorResponse(err_msg=str(err), http_error_code=err.error_http_code).full_api_response
+        return arguments_wrapper
+    return function_wrapper
 

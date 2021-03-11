@@ -44,6 +44,23 @@ class InvalidInputData(ApiException):
         super().__init__(error_msg=f"{arg} was not found on the request body", error_http_code=error_http_code)
 
 
+class ResourceNotFoundError(ApiException):
+
+    def __init__(self, resource, resource_type="username", error_http_code=HttpCodes.NOT_FOUND):
+        super().__init__(
+            error_msg=f"resource {resource_type} {resource} was not found", error_http_code=error_http_code
+        )
 
 
+class DatabaseOperationError(ApiException):
 
+    def __init__(self, error_msg, error_http_code=HttpCodes.INTERNAL_SERVER_ERROR):
+        super().__init__(error_msg=error_msg, error_http_code=error_http_code)
+
+
+class DatabaseInsertionError(DatabaseOperationError):
+    pass
+
+
+class DatabaseDeletionError(DatabaseOperationError):
+    pass

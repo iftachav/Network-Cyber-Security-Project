@@ -1,7 +1,6 @@
 from flask_restful import Resource, request
-from flask import make_response, jsonify
-from api.response import response_decorator
-from api.input_valdiation import validate_input_data
+from api.response import response_decorator, HttpCodes
+from api.service.service import *
 
 
 class Controller(Resource):
@@ -10,25 +9,25 @@ class Controller(Resource):
     "Abstract class" for all the controllers in the api to implement rest-api methods.
     """
 
-    def post(self):
+    def post(self, *args, **kwargs):
         """
         Create a new resource on the server
         """
         pass
 
-    def get(self):
+    def get(self, *args, **kwargs):
         """
         Get an existing resource from the server
         """
         pass
 
-    def put(self):
+    def put(self, *args, **kwargs):
         """
         Update an existing resource on the server
         """
         pass
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         """
         Delete an existing resource from the server
         """
@@ -36,31 +35,71 @@ class Controller(Resource):
 
 
 class UserController(Controller):
+    """
+    User controller to intreact with the client requests.
+    """
+    def __init__(self, user_service_implementation, user_model):
+        """
+        Init the controller class
 
-    @response_decorator(code=200)
+        Args:
+            user_service_implementation (UserServiceImplementation): a class that implements the user service.
+            user_model (UserModel): a user model to interact with DB operations.
+        """
+        self._user_service_implementation = user_service_implementation
+        self._user_model = user_model
+
+    @response_decorator(code=HttpCodes.OK)
     def post(self):
         """
         Endpoint to create a new user on the server.
-        """
-        return request.json
 
-    @response_decorator(code=200)
-    def get(self):
+        Returns:
+            dict: a new user response to the client.
+        """
+        return ServiceClassWrapper(
+            class_type=self._user_service_implementation,
+            model=self._user_model
+        ).create(**request.json)
+
+    @response_decorator(code=HttpCodes.OK)
+    def get(self, username=None):
         """
         Endpoint to get an existing user from the server.
-        """
-        return {"username": "bla"}
 
-    @response_decorator(code=200)
+        Args:
+            username (str): a user name from the URL.
+
+        Returns:
+            dict/list[dict]: Returns either all users or a single user.
+        """
+        if username:  # get single user
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).get_one(username=username)
+        else:  # TODO - implement get all users API.
+            return
+
+    @response_decorator(code=HttpCodes.OK)
     def put(self):
         """
         Endpoint to update an existing user in the server.
         """
         return
 
-    @response_decorator(code=204)
-    def delete(self):
+    @response_decorator(code=HttpCodes.NO_CONTENT)
+    def delete(self, username):
         """
         Endpoint to delete an existing user from the server.
+
+        Args:
+            username (str): a user name provided from the URL.
+
+        Returns:
+            str: should return an empty string as part of the convention of rest APIs.
         """
-        return
+        return ServiceClassWrapper(
+            class_type=self._user_service_implementation,
+            model=self._user_model
+        ).delete(username=username)

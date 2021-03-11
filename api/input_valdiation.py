@@ -3,10 +3,17 @@ from api.errors import InvalidInputData
 
 
 def validate_input_data(*arguments):
+    """
+    Validates that the provided arguments are indeed a part of the json body request.
 
-    def first_wrapper(func):
+    Note: in case all the arguments are valid, this decorator just executes the decorated function.
 
-        def second_wrapper(self, *func_args, **func_kwargs):
+    Args:
+        arguments (list[str]): all the keys that should be in the json request.
+    """
+    def function_wrapper(func):
+
+        def arguments_wrapper(self, *func_args, **func_kwargs):
 
             input_data = request.json
 
@@ -15,5 +22,5 @@ def validate_input_data(*arguments):
                     raise InvalidInputData(arg=arg)
 
             return func(self, *func_args, **func_kwargs)
-        return second_wrapper
-    return first_wrapper
+        return arguments_wrapper
+    return function_wrapper

@@ -1,8 +1,10 @@
-from flask import Flask
-from flask_restful import Api, Resource
+
+from flask_restful import Api
 from api.endpoints import UserController
 from api.response import HttpMethods
-from flask_sqlalchemy import SQLAlchemy
+from api.flask_config import app
+from api.database import UserModel
+from api.logic.user_service import UserServiceImplementation
 
 
 class FlaskAppWrapper(object):
@@ -12,19 +14,17 @@ class FlaskAppWrapper(object):
     Attributes:
         self._api (FlaskApi) - the api of flask.
     """
-    app = Flask(__name__)
 
-    def __init__(self):
-        self._api = Api(app=FlaskAppWrapper.app)
+    def __init__(self, application):
+        self._api = Api(app=application)
+        self._app = application
         self.add_endpoints()
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NetworkSecurityDB.db'
-        self._db = "a"
 
     def run(self, host='127.0.0.1', debug=True, threaded=True):
         """
         Run flask app.
         """
-        self.app.run(host=host, debug=debug, threaded=threaded)
+        self._app.run(host=host, debug=debug, threaded=threaded)
 
     def add_endpoints(self):
         """
@@ -36,22 +36,22 @@ class FlaskAppWrapper(object):
         """
         Adds user endpoints.
         """
-        # docker_server_controller_kwargs = {'docker_server_implementation': DockerServerServiceImplementation}
+        user_controller_kwargs = {"user_model": UserModel, "user_service_implementation": UserServiceImplementation}
 
         self._api.add_resource(
             UserController,
             '/Register',
             endpoint='/Register',
             methods=[HttpMethods.POST],
-            # resource_class_kwargs=docker_server_controller_kwargs,
+            resource_class_kwargs=user_controller_kwargs,
         )
 
         self._api.add_resource(
             UserController,
-            '/Login',
-            endpoint='/Login',
+            '/Login/<username>',
+            endpoint='/Login/<username>',
             methods=[HttpMethods.GET],
-            # resource_class_kwargs=docker_server_controller_kwargs,
+            resource_class_kwargs=user_controller_kwargs,
         )
 
         self._api.add_resource(
@@ -59,15 +59,16 @@ class FlaskAppWrapper(object):
             '/ChangePassword',
             endpoint='/ChangePassword',
             methods=[HttpMethods.PUT],
-            # resource_class_kwargs=docker_server_controller_kwargs,
+            resource_class_kwargs=user_controller_kwargs,
         )
 
         self._api.add_resource(
             UserController,
-            '/DeleteUser',
-            endpoint='/DeleteUser',
+            '/DeleteUser/<username>',
+            endpoint='/DeleteUser/<username>',
             methods=[HttpMethods.DELETE],
-            # resource_class_kwargs=docker_server_controller_kwargs,
+            resource_class_kwargs=user_controller_kwargs,
         )
 
-FlaskAppWrapper().run()
+
+FlaskAppWrapper(application=app).run()

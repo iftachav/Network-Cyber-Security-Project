@@ -1,6 +1,8 @@
 
 class Service(object):
-
+    """
+    A service that will be implemented by all of our resources implementations.
+    """
     def create(self, *args, **kwargs):
         pass
 
@@ -18,8 +20,17 @@ class Service(object):
 
 
 class ServiceClassWrapper(Service):
+    """
+    This class is a wrapper to all of our resource implementations in order to support important feature which is
+     'duck typing'.
 
+     https://realpython.com/lessons/duck-typing/
+    """
     def __init__(self, class_type, *args, **kwargs):
+        """
+        Args:
+            class_type (Service): any concrete class that inherits Service & has the methods below.
+        """
         self._class_type = class_type(*args, **kwargs)
 
     def create(self, *args, **kwargs):
