@@ -12,7 +12,8 @@ class FlaskAppWrapper(object):
     This is a class to wrap flask program and to create its endpoints to functions.
 
     Attributes:
-        self._api (FlaskApi) - the api of flask.
+        self._api (FlaskApi): the api of flask object.
+        self._app (FlaskApplication): the flask application object.
     """
 
     def __init__(self, application):

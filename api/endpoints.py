@@ -36,7 +36,7 @@ class Controller(Resource):
 
 class UserController(Controller):
     """
-    User controller to intreact with the client requests.
+    User controller to interact with the client requests.
     """
     def __init__(self, user_service_implementation, user_model):
         """
@@ -79,7 +79,7 @@ class UserController(Controller):
                 class_type=self._user_service_implementation,
                 model=self._user_model
             ).get_one(username=username, password=password)
-        else:
+        else:  # get all users
             return ServiceClassWrapper(
                 class_type=self._user_service_implementation,
                 model=self._user_model

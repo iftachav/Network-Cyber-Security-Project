@@ -37,7 +37,7 @@ def validate_input_data(*arguments, create=True):
 
 def validate_email_form(email):
     """
-    Valdiates that the email the client provided is indeed a valid email.
+    Validates that the email the client provided is indeed a valid email.
 
     Args:
         email (str): email name.

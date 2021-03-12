@@ -77,4 +77,4 @@ class InvalidPasswordProvided(ApiException):
         """
         maybe it would be better not to mention which password failed for each user due to security reasons
         """
-        super().__init__(error_msg="password/username is invalid", error_http_code=HttpCodes.BAD_REQUEST)
+        super().__init__(error_msg="password/username is invalid", error_http_code=error_http_code)
