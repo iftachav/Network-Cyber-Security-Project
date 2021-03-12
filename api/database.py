@@ -51,6 +51,11 @@ class DatabaseOperations(object):
         Args:
             updated_model (Model): any class which inherits from db.Model. e.g.: UserModel
 
+        Keywords Arguments:
+            username (str): user name.
+            password (str): user password.
+            email (str): user email.
+
         Raises:
             DatabaseInsertionError: in case insertion error to the DB occurred.
         """
@@ -64,11 +69,6 @@ class DatabaseOperations(object):
             db.session.commit()
         except Exception as err:
             raise DatabaseInsertionError(error_msg=str(err))
-
-    def update(self, **kwargs):
-
-        found_model = self._model.query.get(kwargs.get("username"))
-
 
     def get(self, primary_key_value, resource_type="Username"):
         """
@@ -89,6 +89,15 @@ class DatabaseOperations(object):
             return found_model
 
         raise ResourceNotFoundError(resource=primary_key_value, resource_type=resource_type)
+
+    def get_all(self):
+        """
+        Gets all the tables of a model object.
+
+        Returns:
+            list[Model]: a list of classes which inherits db.Model. e.g.: UserModel
+        """
+        return self._model.query.all()
 
     def delete(self, primary_key_value):
         """

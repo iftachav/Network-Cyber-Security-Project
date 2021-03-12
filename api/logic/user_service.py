@@ -5,11 +5,12 @@ import os
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
 from api.database import DatabaseOperations
+from api.errors import InvalidPasswordProvided
 
 
 class UserServiceImplementation(UserService):
 
-    #  TODO - need to implement all the logic of this class, right now it only has DB operations.
+    #  TODO - need to implement all the logic of this class, right now it mostly has DB operations.
 
     def __init__(self, model=None):
         self._database_operations = DatabaseOperations(model=model)
@@ -25,8 +26,9 @@ class UserServiceImplementation(UserService):
             username (str): user name.
             password (str): non-hashed password.
         """
+        new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
         self._database_operations.insert(**new_user_body_request)
-        return new_user_body_request
+        return new_user_body_request    # maybe it's better to return something else and not the password.
 
     @validate_input_data("email", "password", create=False)
     def update(self, username, **update_user_body_request):
@@ -48,7 +50,7 @@ class UserServiceImplementation(UserService):
         if "email" in update_user_body_request:
             user_to_update.email = update_user_body_request.get("email")
         if "password" in update_user_body_request:
-            user_to_update.password = update_user_body_request.get("password")
+            user_to_update.password = hash_password(password=update_user_body_request.get("password"))
 
         self._database_operations.insert(updated_model=user_to_update)
 
@@ -70,23 +72,52 @@ class UserServiceImplementation(UserService):
     def get_many(self):
         """
         Get all the available users from the DB.
-        """
-        pass
 
-    def get_one(self, username):
+        Returns:
+            list[dict]: a list of all users responses from the DB.
+        """
+        response = []
+
+        all_users = self._database_operations.get_all()
+        for user in all_users:
+            response.append({"email": user.email, "password": user.password, "username": user.username})
+
+        return response
+
+    def get_one(self, username, password):
         """
         Get a user by a username.
 
         Args:
              username (str): user name to get.
+             password (str): user password to verify.
         """
         user = self._database_operations.get(primary_key_value=username)
+        if not verify_password(stored_password=user.password, provided_password=password):
+            raise InvalidPasswordProvided()
+
+        # maybe it's better to return something else and not the password.
         return {"email": user.email, "password": user.password, "username": user.username}
 
 
 class User(object):
-    def __init__(self):
-        return
+
+    def __init__(self, username, password, email):
+        self._username = username
+        self._password = password
+        self._email = email
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    def email(self):
+        return self._email
 
 
 def hash_password(password, hashname='sha512', num_of_iterations=10000, salt_bytes=60):

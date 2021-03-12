@@ -63,12 +63,13 @@ class UserController(Controller):
         ).create(**request.json)
 
     @response_decorator(code=HttpCodes.OK)
-    def get(self, username=None):
+    def get(self, username=None, password=None):
         """
         Endpoint to get an existing user from the server.
 
         Args:
             username (str): a user name from the URL.
+            password (str): a user password from the URL.
 
         Returns:
             dict/list[dict]: Returns either all users or a single user.
@@ -77,9 +78,12 @@ class UserController(Controller):
             return ServiceClassWrapper(
                 class_type=self._user_service_implementation,
                 model=self._user_model
-            ).get_one(username=username)
-        else:  # TODO - implement get all users API.
-            return
+            ).get_one(username=username, password=password)
+        else:
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).get_many()
 
     @response_decorator(code=HttpCodes.NO_CONTENT)
     def put(self, username):

@@ -48,8 +48,8 @@ class FlaskAppWrapper(object):
 
         self._api.add_resource(
             UserController,
-            '/Login/<username>',
-            endpoint='/Login/<username>',
+            '/Login/<username>/<password>',
+            endpoint='/Login/<username>/<password>',
             methods=[HttpMethods.GET],
             resource_class_kwargs=user_controller_kwargs,
         )
@@ -67,6 +67,14 @@ class FlaskAppWrapper(object):
             '/DeleteUser/<username>',
             endpoint='/DeleteUser/<username>',
             methods=[HttpMethods.DELETE],
+            resource_class_kwargs=user_controller_kwargs,
+        )
+
+        self._api.add_resource(
+            UserController,
+            '/GetAllUsers',
+            endpoint='/GetAllUsers',
+            methods=[HttpMethods.GET],
             resource_class_kwargs=user_controller_kwargs,
         )
 
