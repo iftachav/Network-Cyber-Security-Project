@@ -64,3 +64,9 @@ class DatabaseInsertionError(DatabaseOperationError):
 
 class DatabaseDeletionError(DatabaseOperationError):
     pass
+
+
+class BadEmailError(ApiException):
+
+    def __init__(self, email, error_http_code=HttpCodes.BAD_REQUEST):
+        super().__init__(error_msg=f"email {email} is not in a valid form", error_http_code=error_http_code)

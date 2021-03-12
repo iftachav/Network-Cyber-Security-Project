@@ -40,24 +40,35 @@ class DatabaseOperations(object):
     @model.setter
     def model(self, model):
         """
-        init the model constructor and assign it to the model in the class.
+        a setter for the 'model' attribute.
         """
         self._model = model
 
-    def insert(self, **kwargs):
+    def insert(self, updated_model=None, **kwargs):
         """
         Inserts a new model instance to the DB.
+
+        Args:
+            updated_model (Model): any class which inherits from db.Model. e.g.: UserModel
 
         Raises:
             DatabaseInsertionError: in case insertion error to the DB occurred.
         """
-        new_model = self._model(**kwargs)
+        if updated_model:
+            new_model = updated_model
+        else:
+            new_model = self._model(**kwargs)
 
         try:
             db.session.add(new_model)
             db.session.commit()
         except Exception as err:
             raise DatabaseInsertionError(error_msg=str(err))
+
+    def update(self, **kwargs):
+
+        found_model = self._model.query.get(kwargs.get("username"))
+
 
     def get(self, primary_key_value, resource_type="Username"):
         """
@@ -85,9 +96,6 @@ class DatabaseOperations(object):
 
         Args:
              primary_key_value (str): the primary key value of the model.
-
-        Returns:
-            Model: any class that inherits db.Model. e.g.: UserModel.
 
         Raises:
             DatabaseDeletionError: in deletion operation was not successful.

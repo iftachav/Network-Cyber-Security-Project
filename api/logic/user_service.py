@@ -28,16 +28,31 @@ class UserServiceImplementation(UserService):
         self._database_operations.insert(**new_user_body_request)
         return new_user_body_request
 
-    def update(self, **update_user_body_request):
+    @validate_input_data("email", "password", create=False)
+    def update(self, username, **update_user_body_request):
         """
         Updates an existing user and updates the DB.
 
+        Args:
+            username (str): user name.
+
         Keyword Arguments:
             email (str): user email.
-            username (str): user name.
             password (str): non-hashed password.
+
+        Returns:
+            str: empty string in case of success.
         """
-        pass
+        user_to_update = self._database_operations.get(primary_key_value=username)
+
+        if "email" in update_user_body_request:
+            user_to_update.email = update_user_body_request.get("email")
+        if "password" in update_user_body_request:
+            user_to_update.password = update_user_body_request.get("password")
+
+        self._database_operations.insert(updated_model=user_to_update)
+
+        return ''
 
     def delete(self, username):
         """
@@ -45,9 +60,12 @@ class UserServiceImplementation(UserService):
 
         Args:
             username (str): user name to delete.
+
+        Returns:
+            str: empty string in case of success.
         """
         self._database_operations.delete(primary_key_value=username)
-        return ""
+        return ''
 
     def get_many(self):
         """
@@ -105,7 +123,7 @@ def verify_password(stored_password, provided_password, hashname='sha512', num_o
         num_of_iterations (int): the num of iterations that the hash function will operate to encrypt the provided pass.
 
     Returns:
-        bool: if the provided usr by the client is the same as stored password, False otherwise.
+        bool: if the provided password by the client is the same as stored password, False otherwise.
     """
     salt = stored_password[:64]
     stored_password = stored_password[64:]

@@ -56,8 +56,8 @@ class FlaskAppWrapper(object):
 
         self._api.add_resource(
             UserController,
-            '/ChangePassword',
-            endpoint='/ChangePassword',
+            '/ChangePassword/<username>',
+            endpoint='/ChangePassword/username>',
             methods=[HttpMethods.PUT],
             resource_class_kwargs=user_controller_kwargs,
         )

@@ -81,12 +81,14 @@ class UserController(Controller):
         else:  # TODO - implement get all users API.
             return
 
-    @response_decorator(code=HttpCodes.OK)
-    def put(self):
+    @response_decorator(code=HttpCodes.NO_CONTENT)
+    def put(self, username):
         """
         Endpoint to update an existing user in the server.
         """
-        return
+        return ServiceClassWrapper(
+            class_type=self._user_service_implementation, model=self._user_model
+        ).update(username=username, **request.json)
 
     @response_decorator(code=HttpCodes.NO_CONTENT)
     def delete(self, username):
