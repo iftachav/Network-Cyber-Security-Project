@@ -1,10 +1,11 @@
 
 from flask_restful import Api
-from api.endpoints import UserController
+from api.endpoints import UserController, ClientController
 from api.response import HttpMethods
 from api.flask_config import app
-from api.database import UserModel
+from api.database import UserModel, ClientModel
 from api.logic.user_service import UserServiceImplementation
+from api.logic.client_service import ClientServiceImplementation
 
 
 class FlaskAppWrapper(object):
@@ -32,6 +33,7 @@ class FlaskAppWrapper(object):
         Adds all the endpoints to the server
         """
         self._user_endpoints()
+        self._client_endpoints()
 
     def _user_endpoints(self):
         """
@@ -77,6 +79,37 @@ class FlaskAppWrapper(object):
             endpoint='/GetAllUsers',
             methods=[HttpMethods.GET],
             resource_class_kwargs=user_controller_kwargs,
+        )
+
+    def _client_endpoints(self):
+        """
+        Adds client endpoints.
+        """
+        client_controller_kwargs = {
+            "client_model": ClientModel, "client_service_implementation": ClientServiceImplementation
+        }
+        self._api.add_resource(
+            ClientController,
+            '/Client',
+            endpoint='/Client',
+            methods=[HttpMethods.POST],
+            resource_class_kwargs=client_controller_kwargs,
+        )
+
+        self._api.add_resource(
+            ClientController,
+            '/Client/<id>',
+            endpoint='/Client/<id>',
+            methods=[HttpMethods.GET],
+            resource_class_kwargs=client_controller_kwargs,
+        )
+
+        self._api.add_resource(
+            ClientController,
+            '/Clients',
+            endpoint='/Clients',
+            methods=[HttpMethods.GET],
+            resource_class_kwargs=client_controller_kwargs,
         )
 
 

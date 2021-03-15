@@ -51,3 +51,7 @@ class ServiceClassWrapper(Service):
 
 class UserService(Service):
     pass
+
+
+class ClientService(Service):
+    pass

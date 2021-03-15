@@ -109,3 +109,47 @@ class UserController(Controller):
             class_type=self._user_service_implementation,
             model=self._user_model
         ).delete(username=username)
+
+
+class ClientController(Controller):
+    """
+    Client controller in order to interact with our client application.
+    """
+    def __init__(self, client_service_implementation, client_model):
+        self._client_service_implementation = client_service_implementation
+        self._client_model = client_model
+
+    @response_decorator(code=HttpCodes.OK)
+    def post(self):
+        """
+        Endpoint to create a client in the server.
+
+        Returns:
+            dict: a new client response to the client application.
+        """
+        return ServiceClassWrapper(
+            class_type=self._client_service_implementation,
+            model=self._client_model
+        ).create(**request.json)
+
+    @response_decorator(code=HttpCodes.OK)
+    def get(self, id=None):
+        """
+        Endpoint to get clients from the server.
+
+        Args:
+            id (str): client ID to get.
+
+        Returns:
+            dict: an existing client response to the client application.
+        """
+        if id:  # get single client.
+            return ServiceClassWrapper(
+                class_type=self._client_service_implementation,
+                model=self._client_model
+            ).get_one(client_id=id)
+        else:  # get all the clients.
+            return ServiceClassWrapper(
+                class_type=self._client_service_implementation,
+                model=self._client_model
+            ).get_many()

@@ -86,7 +86,7 @@ class UserServiceImplementation(UserService):
 
     def get_one(self, username, password):
         """
-        Get a user by a username.
+        Get a user by a username & password from the DB..
 
         Args:
              username (str): user name to get.

@@ -17,6 +17,12 @@ class UserModel(db.Model):
     password = db.Column(db.String(80), nullable=False)
 
 
+class ClientModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(80), nullable=False)
+
+
 db.create_all()
 
 
@@ -64,8 +70,10 @@ class DatabaseOperations(object):
         else:
             new_model = self._model(**kwargs)
 
+        self._model = new_model
+
         try:
-            db.session.add(new_model)
+            db.session.add(self._model)
             db.session.commit()
         except Exception as err:
             raise DatabaseInsertionError(error_msg=str(err))

@@ -29,9 +29,7 @@ class ApiException(Exception):
         Returns:
             bool: True if the error is client error, False otherwise.
         """
-        if 400 <= self._error_http_code < 500:
-            return True
-        return False
+        return 400 <= self._error_http_code < 500
 
     @property
     def error_http_code(self):
