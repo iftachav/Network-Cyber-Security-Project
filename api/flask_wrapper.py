@@ -26,7 +26,7 @@ class FlaskAppWrapper(object):
         """
         Run flask app.
         """
-        self._app.run(host=host, debug=debug, threaded=threaded)
+        self._app.run(host=host, debug=debug, threaded=threaded, ssl_context=("/home/gafik/NetworkCyberSecurity/cert.pem", "/home/gafik/NetworkCyberSecurity/key.pem"))
 
     def add_endpoints(self):
         """
