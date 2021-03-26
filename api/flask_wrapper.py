@@ -1,3 +1,4 @@
+import os
 
 from flask_restful import Api
 from api.endpoints import UserController, ClientController
@@ -26,7 +27,12 @@ class FlaskAppWrapper(object):
         """
         Run flask app.
         """
-        self._app.run(host=host, debug=debug, threaded=threaded, ssl_context=("/home/gafik/NetworkCyberSecurity/cert.pem", "/home/gafik/NetworkCyberSecurity/key.pem"))
+        self._app.run(
+            host=host,
+            debug=debug,
+            threaded=threaded,
+            ssl_context=(os.environ.get("cert.pem"), os.environ.get("key.pem"))
+        )
 
     def add_endpoints(self):
         """
@@ -113,4 +119,8 @@ class FlaskAppWrapper(object):
         )
 
 
-FlaskAppWrapper(application=app).run()
+flask = FlaskAppWrapper(application=app)
+
+# flask.run() should only be used for local host.
+# flask.run()
+
