@@ -30,8 +30,8 @@ class FlaskAppWrapper(object):
         self._app.run(
             host=host,
             debug=debug,
-            threaded=threaded,
-            ssl_context=(os.environ.get("cert.pem"), os.environ.get("key.pem"))
+            threaded=threaded
+        #     ,ssl_context=(os.environ.get("cert.pem"), os.environ.get("key.pem"))
         )
 
     def add_endpoints(self):
@@ -122,5 +122,5 @@ class FlaskAppWrapper(object):
 flask = FlaskAppWrapper(application=app)
 
 # flask.run() should only be used for local host.
-# flask.run()
+flask.run()
 
