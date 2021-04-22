@@ -26,8 +26,11 @@ class UserServiceImplementation(UserService):
             username (str): user name.
             password (str): non-hashed password.
         """
+        print("user service:create", new_user_body_request)
         new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
+        print("user service:create", new_user_body_request)
         self._database_operations.insert(**new_user_body_request)
+        print("user service:create", new_user_body_request)
         return new_user_body_request    # maybe it's better to return something else and not the password.
 
     @validate_input_data("email", "password", create=False)
