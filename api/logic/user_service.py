@@ -141,7 +141,7 @@ def hash_password(password, hashname='sha512', num_of_iterations=10000, salt_byt
     pwdhash = hashlib.pbkdf2_hmac(
         hash_name=hashname, password=password.encode('utf-8'), salt=salt, iterations=num_of_iterations
     )
-    pwdhash = binascii.hexlify(data=pwdhash)
+    pwdhash = binascii.hexlify(pwdhash)
 
     return (salt + pwdhash).decode('ascii')
 
