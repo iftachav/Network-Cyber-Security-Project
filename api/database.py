@@ -16,6 +16,8 @@ class UserModel(db.Model):
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
 
+    #  TODO - add history array for passwords.
+    #  history = db.Column(db.ARRAY(80), nullable=False)
 
 class ClientModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

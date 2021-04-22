@@ -123,4 +123,6 @@ flask = FlaskAppWrapper(application=app)
 
 # flask.run() should only be used for local host.
 flask.run()
+if __name__ == "__main__":
+    flask.run()
 

@@ -70,6 +70,12 @@ class BadEmailError(ApiException):
         super().__init__(error_msg=f"email {email} is not in a valid form", error_http_code=error_http_code)
 
 
+class BadPasswordError(ApiException):
+
+    def __init__(self, password, error_http_code=HttpCodes.BAD_REQUEST):
+        super().__init__(error_msg=f"password {password} is not in a valid form", error_http_code=error_http_code)
+
+
 class InvalidPasswordProvided(ApiException):
     def __init__(self, error_http_code=HttpCodes.BAD_REQUEST):
         """
