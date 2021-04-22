@@ -57,8 +57,8 @@ class UserController(Controller):
         Returns:
             dict: a new user response to the client.
         """
-        print("endpoints:response_decorator, request:", **request)
-        print("endpoints:response_decorator, json:", **request.json)
+        print("endpoints:response_decorator, request:", request)
+        print("endpoints:response_decorator, json:", request.json)
         return ServiceClassWrapper(
             class_type=self._user_service_implementation,
             model=self._user_model

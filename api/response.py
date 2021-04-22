@@ -79,7 +79,7 @@ def response_decorator(code):
                 Response: flask api response.
             """
             try:
-                print("response:try - response_decorator", **kwargs)
+                print("response:try - response_decorator", kwargs)
                 return ApiResponse(response_body=func(*args, **kwargs), http_status_code=code).full_api_response
             except Exception as err:
                 print("response:except - response_decorator", err)
