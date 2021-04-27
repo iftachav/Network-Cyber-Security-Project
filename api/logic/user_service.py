@@ -2,6 +2,8 @@ import hashlib
 import binascii
 import os
 
+from flask import session
+
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
 from api.database import DatabaseOperations
@@ -95,6 +97,8 @@ class UserServiceImplementation(UserService):
              username (str): user name to get.
              password (str): user password to verify.
         """
+        client_ip = session.get('client_ip')
+        print(client_ip)
         user = self._database_operations.get(primary_key_value=username)
         if not verify_password(stored_password=user.password, provided_password=password):
             raise InvalidPasswordProvided()
