@@ -82,6 +82,7 @@ def response_decorator(code):
                 print("response:try - response_decorator", kwargs)
                 return ApiResponse(response_body=func(*args, **kwargs), http_status_code=code).full_api_response
             except Exception as err:
+                print("args:", args, "kwargs", kwargs)
                 print("response:except - response_decorator", err)
                 return ErrorResponse(err_msg=str(err), http_error_code=err.error_http_code).full_api_response
         return arguments_wrapper

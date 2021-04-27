@@ -82,3 +82,9 @@ class InvalidPasswordProvided(ApiException):
         maybe it would be better not to mention which password failed for each user due to security reasons
         """
         super().__init__(error_msg="password/username is invalid", error_http_code=error_http_code)
+
+
+class UserIsLockedError(ApiException):
+
+    def __init__(self, ip, error_http_code=HttpCodes.UNAUTHORIZED):
+        super().__init__(error_msg=f"Login try was captured and ip : {ip} has been saved.", error_http_code=error_http_code)

@@ -55,3 +55,7 @@ class UserService(Service):
 
 class ClientService(Service):
     pass
+
+
+class LoginAttemptsService(Service):
+    pass

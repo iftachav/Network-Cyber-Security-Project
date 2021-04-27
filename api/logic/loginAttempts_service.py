@@ -1,19 +1,17 @@
+import datetime
 import hashlib
 import binascii
 import os
 
-from flask import request
+from flask import request, jsonify
 
-from api.logic.loginAttempts_service import LoginAttemptsServiceImplementation
-from api.service.service import UserService
+from api.service.service import UserService, LoginAttemptsService
 from api.input_valdiation import validate_input_data
-from api.database import DatabaseOperations, LoginAttemptsModel
-from api.errors import InvalidPasswordProvided, UserIsLockedError
-
-from api.password_config import *
+from api.database import DatabaseOperations
+from api.errors import InvalidPasswordProvided, ResourceNotFoundError
 
 
-class UserServiceImplementation(UserService):
+class LoginAttemptsServiceImplementation(LoginAttemptsService):
 
     #  TODO - need to implement all the logic of this class, right now it mostly has DB operations.
 
@@ -21,8 +19,9 @@ class UserServiceImplementation(UserService):
         self._database_operations = DatabaseOperations(model=model)
         self._model = model
 
-    @validate_input_data("email", "username", "password")
-    def create(self, **new_user_body_request):
+    @validate_input_data("ip", "username", "num_attempts", "prev_time")
+    def create(self, **new_loginAttempts_body_request):
+
         """
         Creates a new user and inserts it into the DB.
 
@@ -31,14 +30,16 @@ class UserServiceImplementation(UserService):
             username (str): user name.
             password (str): non-hashed password.
         """
-        print("user service:create", new_user_body_request)
-        new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
-        print("user service:create", new_user_body_request)
-        self._database_operations.insert(**new_user_body_request)
-        print("user service:create", new_user_body_request)
-        return new_user_body_request    # maybe it's better to return something else and not the password.
+        print("bef prev_time:", new_loginAttempts_body_request)
+        new_loginAttempts_body_request["prev_time"] = datetime.datetime.now()
+        print("bef num_attempts:", new_loginAttempts_body_request)
+        new_loginAttempts_body_request["num_attempts"] = 1
+        print("bef insert :", new_loginAttempts_body_request)
+        self._database_operations.insert(**new_loginAttempts_body_request)
+        print("saved new attempt:", new_loginAttempts_body_request)
+        return new_loginAttempts_body_request    # maybe it's better to return something else and not the password.
 
-    @validate_input_data("email", "password", create=False)
+    @validate_input_data("num_attempts", "prev_time", create=False)
     def update(self, username, **update_user_body_request):
         """
         Updates an existing user and updates the DB.
@@ -53,15 +54,26 @@ class UserServiceImplementation(UserService):
         Returns:
             str: empty string in case of success.
         """
-        user_to_update = self._database_operations.get(primary_key_value=username)
 
-        if "email" in update_user_body_request:
-            user_to_update.email = update_user_body_request.get("email")
-        if "password" in update_user_body_request:
-            user_to_update.password = hash_password(password=update_user_body_request.get("password"))
+        attempt_to_update = self._database_operations.get((username, request.remote_addr))
 
-        self._database_operations.insert(updated_model=user_to_update)
+        print("updating attempt")
+        if (datetime.datetime.now() - attempt_to_update.prev_time).seconds / 3600 > 24:
+            attempt_to_update.num_attempts = 0
+        attempt_to_update.num_attempts += 1
+        attempt_to_update.prev_time = datetime.datetime.now()
+        print("updated", attempt_to_update)
+        # if attempt_to_update.num_attempts >= LOGIN_ATTEMPTS:
+        #     raise
 
+
+        # if update_user_body_request.get("num_attempts")
+        # attempt_to_update.email = update_user_body_request.get("email")
+        # if "password" in update_user_body_request:
+        #     attempt_to_update.password = hash_password(password=update_user_body_request.get("password"))
+
+        self._database_operations.insert(updated_model=attempt_to_update)
+        print("attempt saved")
         return ''
 
     def delete(self, username):
@@ -92,7 +104,7 @@ class UserServiceImplementation(UserService):
 
         return response
 
-    def get_one(self, username, password):
+    def get_one(self, username, ip):
         """
         Get a user by a username & password from the DB..
 
@@ -100,17 +112,19 @@ class UserServiceImplementation(UserService):
              username (str): user name to get.
              password (str): user password to verify.
         """
-        ip_addr = request.remote_addr
-        #
-        # attempt = LoginAttemptsServiceImplementation(LoginAttemptsModel()).get_one(username, request.remote_addr)
-        # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
-        #     raise UserIsLockedError(ip_addr)
-        user = self._database_operations.get(primary_key_value=username)
-        if not verify_password(stored_password=user.password, provided_password=password):
-            raise InvalidPasswordProvided()
+        # ip_addr = request.remote_addr
+        # print()
+        try:
+            print("searching attempt", username, ip)
+            attempt = self._database_operations.get((username, ip))
+            print("found attempt", attempt)
+        except ResourceNotFoundError:
+            print("creating new attempt", username, ip)
+            attempt = self.create(jsonify({"ip": ip, "username": username}))
+            return attempt
 
         # maybe it's better to return something else and not the password.
-        return {"email": user.email, "password": user.password, "username": user.username}
+        return {"ip": attempt.ip, "username": attempt.username, "num_attempts": attempt.num_attempts, "prev_time": attempt.prev_time}
 
 
 class User(object):
