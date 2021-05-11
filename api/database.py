@@ -19,22 +19,15 @@ class UserModel(db.Model):
     username = db.Column(db.String(80), primary_key=True)
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    history = db.Column(db.String(80), nullable=False)
 
     #  TODO - add history array for passwords.
-    #  history = db.Column(db.ARRAY(80), nullable=False)
 
 
 class ClientModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False)
-
-
-class LoginAttemptsModel(db.Model):
-    ip = db.Column(db.String(80), primary_key=True)
-    username = db.Column(db.String(80), primary_key=True)
-    num_attempts = db.Column(db.Integer, nullable=False)
-    prev_time = db.Column(DateTime, default=datetime.datetime.utcnow)
 
 
 db.create_all()

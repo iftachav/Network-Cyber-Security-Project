@@ -4,10 +4,9 @@ import os
 
 from flask import request
 
-from api.logic.loginAttempts_service import LoginAttemptsServiceImplementation
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
-from api.database import DatabaseOperations, LoginAttemptsModel
+from api.database import DatabaseOperations
 from api.errors import InvalidPasswordProvided, UserIsLockedError
 
 from api.password_config import *
@@ -33,6 +32,7 @@ class UserServiceImplementation(UserService):
         """
         print("user service:create", new_user_body_request)
         new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
+        new_user_body_request["history"] = ""
         print("user service:create", new_user_body_request)
         self._database_operations.insert(**new_user_body_request)
         print("user service:create", new_user_body_request)
@@ -54,11 +54,21 @@ class UserServiceImplementation(UserService):
             str: empty string in case of success.
         """
         user_to_update = self._database_operations.get(primary_key_value=username)
-
+        print("update, user_to_update:", user_to_update)
         if "email" in update_user_body_request:
             user_to_update.email = update_user_body_request.get("email")
         if "password" in update_user_body_request:
-            user_to_update.password = hash_password(password=update_user_body_request.get("password"))
+            print("update, old p:", user_to_update.password)
+            p = update_user_body_request.get("password")
+            hashed_pass = hash_password(password=update_user_body_request.get("password"))
+            if not check_in_history(user_to_update.history, p) and not verify_password(user_to_update.password, p):
+                print("update, user_to_update:", user_to_update)
+                user_to_update.history = change_history(user_to_update.history, user_to_update.password)
+                user_to_update.password = hash_password(password=update_user_body_request.get("password"))
+                print("update, new p:", user_to_update.password)
+            else:
+                print("update failed")
+                raise InvalidPasswordProvided()
 
         self._database_operations.insert(updated_model=user_to_update)
 
@@ -100,8 +110,8 @@ class UserServiceImplementation(UserService):
              username (str): user name to get.
              password (str): user password to verify.
         """
-        ip_addr = request.remote_addr
-        #
+        # ip_addr = request.remote_addr
+
         # attempt = LoginAttemptsServiceImplementation(LoginAttemptsModel()).get_one(username, request.remote_addr)
         # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
         #     raise UserIsLockedError(ip_addr)
@@ -154,6 +164,25 @@ def hash_password(password, hashname='sha512', num_of_iterations=10000, salt_byt
     pwdhash = binascii.hexlify(pwdhash)
 
     return (salt + pwdhash).decode('ascii')
+
+
+def check_in_history(history, provided_password):
+    history_list = history.split(',')
+    for p in history_list:
+        if verify_password(p, provided_password):
+            return True
+    return False
+
+
+def change_history(history, password):
+    history_list = history.split(',')
+    if len(history_list) >= HISTORY:
+        history_list.pop(0)
+    history_list.append(password)
+    for p in history_list:
+        print(p)
+    return ','.join(history_list)
+
 
 
 def verify_password(stored_password, provided_password, hashname='sha512', num_of_iterations=10000):
