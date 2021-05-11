@@ -55,20 +55,24 @@ class UserServiceImplementation(UserService):
         """
         user_to_update = self._database_operations.get(primary_key_value=username)
         print("update, user_to_update:", user_to_update)
-        if "email" in update_user_body_request:
-            user_to_update.email = update_user_body_request.get("email")
-        if "password" in update_user_body_request:
-            print("update, old p:", user_to_update.password)
-            p = update_user_body_request.get("password")
-            hashed_pass = hash_password(password=update_user_body_request.get("password"))
-            if not check_in_history(user_to_update.history, p) and not verify_password(user_to_update.password, p):
-                print("update, user_to_update:", user_to_update)
-                user_to_update.history = change_history(user_to_update.history, user_to_update.password)
-                user_to_update.password = hash_password(password=update_user_body_request.get("password"))
-                print("update, new p:", user_to_update.password)
-            else:
-                print("update failed")
-                raise InvalidPasswordProvided()
+        if "old_password" in update_user_body_request and verify_password(user_to_update.password, update_user_body_request.get("old_password")):
+            if "email" in update_user_body_request:
+                user_to_update.email = update_user_body_request.get("email")
+            if "password" in update_user_body_request:
+                print("update, old p:", user_to_update.password)
+                p = update_user_body_request.get("password")
+                # hashed_pass = hash_password(password=update_user_body_request.get("password"))
+                if not check_in_history(user_to_update.history, p) and not verify_password(user_to_update.password, p):
+                    print("update, user_to_update:", user_to_update)
+                    user_to_update.history = change_history(user_to_update.history, user_to_update.password)
+                    user_to_update.password = hash_password(password=update_user_body_request.get("password"))
+                    print("update, new p:", user_to_update.password)
+                else:
+                    print("update failed")
+                    raise InvalidPasswordProvided()
+        else:
+            print("update failed")
+            raise InvalidPasswordProvided()
 
         self._database_operations.insert(updated_model=user_to_update)
 
