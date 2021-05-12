@@ -1,7 +1,5 @@
-import datetime
-
 from sqlalchemy import DateTime
-
+from datetime import datetime
 from api.flask_config import app
 from flask_sqlalchemy import SQLAlchemy
 from api.errors import (
@@ -20,7 +18,9 @@ class UserModel(db.Model):
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
     history = db.Column(db.String(80), nullable=False)
-
+    try_count = db.Column(db.Integer, nullable=False)
+    last_try = db.Column(db.DateTime, default=datetime.now())
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
     #  TODO - add history array for passwords.
 
 

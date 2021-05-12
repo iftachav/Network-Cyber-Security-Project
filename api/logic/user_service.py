@@ -3,6 +3,7 @@ import binascii
 import os
 
 from flask import request
+from datetime import datetime
 
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
@@ -30,12 +31,15 @@ class UserServiceImplementation(UserService):
             username (str): user name.
             password (str): non-hashed password.
         """
-        print("user service:create", new_user_body_request)
+        # print("user service:create", new_user_body_request)
         new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
         new_user_body_request["history"] = ""
-        print("user service:create", new_user_body_request)
+        new_user_body_request["last_try"] = datetime.now()
+        new_user_body_request["try_count"] = 0
+        new_user_body_request["is_active"] = True
+        # print("user service:create", new_user_body_request)
         self._database_operations.insert(**new_user_body_request)
-        print("user service:create", new_user_body_request)
+        # print("user service:create", new_user_body_request)
         return new_user_body_request    # maybe it's better to return something else and not the password.
 
     @validate_input_data("email", "password", create=False)
@@ -120,11 +124,24 @@ class UserServiceImplementation(UserService):
         # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
         #     raise UserIsLockedError(ip_addr)
         user = self._database_operations.get(primary_key_value=username)
-        if not verify_password(stored_password=user.password, provided_password=password):
-            raise InvalidPasswordProvided()
-
-        # maybe it's better to return something else and not the password.
-        return {"email": user.email, "password": user.password, "username": user.username}
+        if (datetime.now() - user.last_try).seconds > LOGIN_LOCK:
+            user.is_active = True
+            user.try_count = 0
+        if user.try_count >= LOGIN_ATTEMPTS:
+            user.is_active = False
+        if user.is_active:
+            if not verify_password(stored_password=user.password, provided_password=password):
+                user.try_count += 1
+                user.last_try = datetime.now()
+                self._database_operations.insert(updated_model=user)
+                raise InvalidPasswordProvided()
+            user.try_count = 0
+            self._database_operations.insert(updated_model=user)
+            # maybe it's better to return something else and not the password.
+            return {"email": user.email, "password": user.password, "username": user.username}
+        else:
+            self._database_operations.insert(updated_model=user)
+            raise InvalidPasswordProvided() # need to throw locked exception
 
 
 class User(object):
