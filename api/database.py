@@ -25,9 +25,10 @@ class UserModel(db.Model):
 
 
 class ClientModel(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(80), nullable=False)
+    image = db.Column(db.String(80), nullable=False)
+
 
 
 db.create_all()
