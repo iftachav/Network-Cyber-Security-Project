@@ -1,6 +1,9 @@
 import hashlib
 import binascii
 import os
+import random
+import string
+from flask_mail import Message
 
 from flask import request
 from datetime import datetime
@@ -9,6 +12,7 @@ from api.service.service import UserService
 from api.input_valdiation import validate_input_data
 from api.database import DatabaseOperations
 from api.errors import InvalidPasswordProvided, UserIsLockedError
+from api.flask_config import mail
 
 from api.password_config import *
 
@@ -37,6 +41,7 @@ class UserServiceImplementation(UserService):
         new_user_body_request["last_try"] = datetime.now()
         new_user_body_request["try_count"] = 0
         new_user_body_request["is_active"] = True
+
         # print("user service:create", new_user_body_request)
         self._database_operations.insert(**new_user_body_request)
         # print("user service:create", new_user_body_request)
@@ -103,7 +108,6 @@ class UserServiceImplementation(UserService):
             list[dict]: a list of all users responses from the DB.
         """
         response = []
-
         all_users = self._database_operations.get_all()
         for user in all_users:
             response.append({"email": user.email, "try_count": user.try_count, "last_try": user.last_try, "username": user.username, "is_active": user.is_active})
@@ -205,7 +209,6 @@ def change_history(history, password):
     return ','.join(history_list)
 
 
-
 def verify_password(stored_password, provided_password, hashname='sha512', num_of_iterations=10000):
     """
     Checks whether a provided user by the client is indeed the correct password.
@@ -231,3 +234,18 @@ def verify_password(stored_password, provided_password, hashname='sha512', num_o
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
 
     return pwdhash == stored_password
+
+
+def send_email(email, length=10):
+
+    random_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
+    hashed_string = hashlib.sha1(random_str.encode('utf-8')).hexdigest()
+
+    msg = Message(
+        subject="Password Reset",
+        sender=os.environ.get("MAIL_USERNAME"),
+        recipients=[email],
+        body=f"Please enter this value {hashed_string} in order to proceed to change password page")
+    mail.send(msg)
+
+    return hashed_string
