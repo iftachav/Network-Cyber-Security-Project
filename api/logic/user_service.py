@@ -108,6 +108,7 @@ class UserServiceImplementation(UserService):
             list[dict]: a list of all users responses from the DB.
         """
         response = []
+        send_email(email="guyafik11@gmail.com")
         all_users = self._database_operations.get_all()
         for user in all_users:
             response.append({"email": user.email, "try_count": user.try_count, "last_try": user.last_try, "username": user.username, "is_active": user.is_active})
@@ -236,7 +237,7 @@ def verify_password(stored_password, provided_password, hashname='sha512', num_o
     return pwdhash == stored_password
 
 
-def send_email(email, length=10):
+def send_email(email, length=15):
 
     random_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
     hashed_string = hashlib.sha1(random_str.encode('utf-8')).hexdigest()
@@ -245,7 +246,7 @@ def send_email(email, length=10):
         subject="Password Reset",
         sender=os.environ.get("MAIL_USERNAME"),
         recipients=[email],
-        body=f"Please enter this value {hashed_string} in order to proceed to change password page")
+        body=f"Please enter this value {random_str} in order to proceed to change password page")
     mail.send(msg)
 
     return hashed_string
