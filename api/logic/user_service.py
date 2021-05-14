@@ -69,12 +69,25 @@ class UserServiceImplementation(UserService):
             if update_user_body_request.get("forgot_password") == "send":
                 hashed_value = send_email(user_to_update.email)
                 if hashed_value:
-                    # user_to_update.password = hashed_value
+                    user_to_update.history = change_history(user_to_update.history, user_to_update.password)
+                    user_to_update.password = hashed_value
                     print("new pass =", hashed_value)
                 else:
                     raise BadEmailError()
+                self._database_operations.insert(updated_model=user_to_update)
             elif update_user_body_request.get("forgot_password") == "change":
-                pass
+                print(update_user_body_request.get("hashed_value"), ",", update_user_body_request.get("password"))
+                if validate_value(user_to_update.password, update_user_body_request.get("hashed_value")):
+                    p = update_user_body_request.get("password")
+                    if not check_in_history(user_to_update.history, p):
+                        print(p, "is saved")
+                        user_to_update.password = hash_password(password=p)
+                    else:
+                        print(p, "is in history")
+                        raise InvalidPasswordProvided()
+                else:
+                    print(update_user_body_request.get("hashed_value"), "is not valid")
+                    raise InvalidPasswordProvided()
         else:
             user_to_update = self._database_operations.get(primary_key_value=username)
             print("update, user_to_update:", user_to_update)
@@ -99,7 +112,7 @@ class UserServiceImplementation(UserService):
 
         self._database_operations.insert(updated_model=user_to_update)
 
-        return ''
+        return {'HELLO':'world'}
 
     def delete(self, username):
         """
