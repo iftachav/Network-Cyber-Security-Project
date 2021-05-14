@@ -122,7 +122,7 @@ class UserServiceImplementation(UserService):
             list[dict]: a list of all users responses from the DB.
         """
         response = []
-        # send_email(email="aradpelled11@gmail.com")
+
         all_users = self._database_operations.get_all()
         for user in all_users:
             response.append({"email": user.email, "try_count": user.try_count, "last_try": user.last_try, "username": user.username, "is_active": user.is_active})
