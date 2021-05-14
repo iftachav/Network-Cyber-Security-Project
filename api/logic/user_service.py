@@ -62,26 +62,40 @@ class UserServiceImplementation(UserService):
         Returns:
             str: empty string in case of success.
         """
-        user_to_update = self._database_operations.get(primary_key_value=username)
-        print("update, user_to_update:", user_to_update)
-        if "old_password" in update_user_body_request and verify_password(user_to_update.password, update_user_body_request.get("old_password")):
-            if "email" in update_user_body_request:
-                user_to_update.email = update_user_body_request.get("email")
-            if "password" in update_user_body_request:
-                print("update, old p:", user_to_update.password)
-                p = update_user_body_request.get("password")
-                # hashed_pass = hash_password(password=update_user_body_request.get("password"))
-                if not check_in_history(user_to_update.history, p) and not verify_password(user_to_update.password, p):
-                    print("update, user_to_update:", user_to_update)
-                    user_to_update.history = change_history(user_to_update.history, user_to_update.password)
-                    user_to_update.password = hash_password(password=update_user_body_request.get("password"))
-                    print("update, new p:", user_to_update.password)
+        # arad - hhgaa
+        # 126rdf - acjnlkahcla
+        if "forgot_password" in update_user_body_request:
+            user_to_update = self._database_operations.get(primary_key_value=username)
+            if update_user_body_request.get("forgot_password") == "send":
+                hashed_value = send_email(user_to_update.email)
+                if hashed_value:
+                    # user_to_update.password = hashed_value
+                    print("new pass =", hashed_value)
                 else:
-                    print("update failed")
-                    raise InvalidPasswordProvided()
+                    raise BadEmailError()
+            elif update_user_body_request.get("forgot_password") == "change":
+                pass
         else:
-            print("update failed")
-            raise InvalidPasswordProvided()
+            user_to_update = self._database_operations.get(primary_key_value=username)
+            print("update, user_to_update:", user_to_update)
+            if "old_password" in update_user_body_request and verify_password(user_to_update.password, update_user_body_request.get("old_password")):
+                if "email" in update_user_body_request:
+                    user_to_update.email = update_user_body_request.get("email")
+                if "password" in update_user_body_request:
+                    print("update, old p:", user_to_update.password)
+                    p = update_user_body_request.get("password")
+                    # hashed_pass = hash_password(password=update_user_body_request.get("password"))
+                    if not check_in_history(user_to_update.history, p) and not verify_password(user_to_update.password, p):
+                        print("update, user_to_update:", user_to_update)
+                        user_to_update.history = change_history(user_to_update.history, user_to_update.password)
+                        user_to_update.password = hash_password(password=update_user_body_request.get("password"))
+                        print("update, new p:", user_to_update.password)
+                    else:
+                        print("update failed")
+                        raise InvalidPasswordProvided()
+            else:
+                print("update failed")
+                raise InvalidPasswordProvided()
 
         self._database_operations.insert(updated_model=user_to_update)
 
@@ -108,7 +122,7 @@ class UserServiceImplementation(UserService):
             list[dict]: a list of all users responses from the DB.
         """
         response = []
-        send_email(email="guyafik11@gmail.com")
+        # send_email(email="aradpelled11@gmail.com")
         all_users = self._database_operations.get_all()
         for user in all_users:
             response.append({"email": user.email, "try_count": user.try_count, "last_try": user.last_try, "username": user.username, "is_active": user.is_active})
@@ -250,3 +264,8 @@ def send_email(email, length=15):
     mail.send(msg)
 
     return hashed_string
+
+
+def validate_value(db_value, user_value):
+    hashed_value = hashlib.sha1(user_value.encode('utf-8')).hexdigest()
+    return hashed_value == db_value
