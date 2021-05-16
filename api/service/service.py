@@ -6,6 +6,10 @@ class Service(object):
     def create(self, *args, **kwargs):
         pass
 
+    def check_session(self, *args, **kwargs):
+        # print("in service check_session")
+        pass
+
     def update(self, *args, **kwargs):
         pass
 
@@ -32,6 +36,9 @@ class ServiceClassWrapper(Service):
             class_type (Service): any concrete class that inherits Service & has the methods below.
         """
         self._class_type = class_type(*args, **kwargs)
+
+    def check_session(self, *args, **kwargs):
+        return self._class_type.check_session(*args, **kwargs)
 
     def create(self, *args, **kwargs):
         return self._class_type.create(*args, **kwargs)

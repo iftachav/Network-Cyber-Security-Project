@@ -42,6 +42,6 @@ class ClientServiceImplementation(ClientService):
 
         all_clients = self._database_operations.get_all()
         for client in all_clients:
-            response.append({"id": client.id, "name": client.name, "image": client.image})
+            response.append({"name": client.name, "image": client.image})
 
         return response

@@ -59,10 +59,17 @@ class UserController(Controller):
         """
         print("endpoints:response_decorator, request:", request)
         print("endpoints:response_decorator, json:", request.json)
-        return ServiceClassWrapper(
-            class_type=self._user_service_implementation,
-            model=self._user_model
-        ).create(**request.json)
+        if "check_session" in request.json:
+            print("calling check_session")
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).check_session(**request.json)
+        else:
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).create(**request.json)
 
     @response_decorator(code=HttpCodes.OK)
     def get(self, username=None, password=None):

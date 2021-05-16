@@ -16,6 +16,8 @@ from api.flask_config import mail
 
 from api.password_config import *
 
+SESSIONID_LENGTH = 26
+
 
 class UserServiceImplementation(UserService):
 
@@ -24,6 +26,15 @@ class UserServiceImplementation(UserService):
     def __init__(self, model=None):
         self._database_operations = DatabaseOperations(model=model)
         self._model = model
+
+    def check_session(self, **new_user_body_request):
+        username = new_user_body_request.get("username")
+        user = self._database_operations.get(primary_key_value=username)
+        print("check_session :", username, user.SESSIONID)
+        if user.SESSIONID != "" and user.SESSIONID == new_user_body_request.get("SESSIONID"):
+            return ''
+        else:
+            raise InvalidPasswordProvided()  # BadSessionId
 
     @validate_input_data("email", "username", "password")
     def create(self, **new_user_body_request):
@@ -38,6 +49,7 @@ class UserServiceImplementation(UserService):
         # print("user service:create", new_user_body_request)
         new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
         new_user_body_request["history"] = ""
+        new_user_body_request["SESSIONID"] = ""
         new_user_body_request["last_try"] = datetime.now()
         new_user_body_request["try_count"] = 0
         new_user_body_request["is_active"] = True
@@ -46,6 +58,8 @@ class UserServiceImplementation(UserService):
         self._database_operations.insert(**new_user_body_request)
         # print("user service:create", new_user_body_request)
         return new_user_body_request    # maybe it's better to return something else and not the password.
+
+
 
     @validate_input_data("email", "password", create=False)
     def update(self, username, **update_user_body_request):
@@ -168,9 +182,10 @@ class UserServiceImplementation(UserService):
                 self._database_operations.insert(updated_model=user)
                 raise InvalidPasswordProvided()
             user.try_count = 0
+            user.SESSIONID = ''.join(random.choice(string.ascii_lowercase+string.digits) for _ in range(SESSIONID_LENGTH))
             self._database_operations.insert(updated_model=user)
             # maybe it's better to return something else and not the password.
-            return {"email": user.email, "password": user.password, "username": user.username}
+            return {"email": user.email, "password": user.password, "username": user.username, "SESSIONID": user.SESSIONID}
         else:
             self._database_operations.insert(updated_model=user)
             raise InvalidPasswordProvided() # need to throw locked exception
@@ -266,7 +281,7 @@ def verify_password(stored_password, provided_password, hashname='sha512', num_o
 
 def send_email(email, length=15):
 
-    random_str = ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
+    random_str = ''.join(random.choice(string.ascii_lowercase+string.digits) for _ in range(length))
     hashed_string = hashlib.sha1(random_str.encode('utf-8')).hexdigest()
 
     msg = Message(

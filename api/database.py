@@ -21,6 +21,7 @@ class UserModel(db.Model):
     try_count = db.Column(db.Integer, nullable=False)
     last_try = db.Column(db.DateTime, default=datetime.now())
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    SESSIONID = db.Column(db.String(80), nullable=False)
     #  TODO - add history array for passwords.
 
 
@@ -28,7 +29,6 @@ class ClientModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(80), nullable=False)
     image = db.Column(db.String(80), nullable=False)
-
 
 
 db.create_all()
