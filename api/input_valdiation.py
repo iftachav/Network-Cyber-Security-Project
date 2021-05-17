@@ -84,40 +84,28 @@ def validate_password_newUser(password):
     print("length is", len(password))
     if not check_requirements(password):
         raise BadPasswordError(password)
-    # if not search_password(password):
-    #     raise BadPasswordError(password)
-    # TODO - efficient dictionary search
-    pass
+    if search_password(password):
+        raise BadPasswordError(password)
 
 
 def validate_password_updated(user, password):
     validate_password_newUser(password)
-    check_history(user, password)
-
-
-def check_history(user, password):
-    # if password matches history - raise BadPasswordError
-    pass
 
 
 def search_password(password):
     # if password is in file - raise BadPasswordError
-    print(check_if_string_in_file(FILENAME, password))
+    return check_if_string_in_file(FILENAME, password)
 
 
 def check_if_string_in_file(file_name, string_to_search):
     """ Check if any line in the file contains given string """
     # Open the file in read only mode
-    t = time.time()
     with open(file_name, 'r', errors="ignore") as read_obj:
         # Read all lines in the file one by one
         for line in read_obj:
             # For each line, check if line contains the string
-            print(line)
             if string_to_search in line:
-                print(t-time.time())
                 return True
-    print(time.time() - t)
     return False
 
 # search_password("leftout2")

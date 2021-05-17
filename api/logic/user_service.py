@@ -32,7 +32,7 @@ class UserServiceImplementation(UserService):
         user = self._database_operations.get(primary_key_value=username)
         print("check_session :", username, user.SESSIONID)
         if user.SESSIONID != "" and user.SESSIONID == new_user_body_request.get("SESSIONID"):
-            return ''
+            return {"username":user.username, "email":user.email}
         else:
             raise InvalidPasswordProvided()  # BadSessionId
 
@@ -138,7 +138,14 @@ class UserServiceImplementation(UserService):
         Returns:
             str: empty string in case of success.
         """
-        self._database_operations.delete(primary_key_value=username)
+        rule = request.url_rule
+        # print(rule, ",", str(rule))
+        if "Logout" in str(rule):
+            user = self._database_operations.get(primary_key_value=username)
+            user.SESSIONID = ""
+            self._database_operations.insert(updated_model=user)
+        else:
+            self._database_operations.delete(primary_key_value=username)
         return ''
 
     def get_many(self):

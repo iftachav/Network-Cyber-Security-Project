@@ -47,13 +47,13 @@ class FlaskAppWrapper(object):
         """
         user_controller_kwargs = {"user_model": UserModel, "user_service_implementation": UserServiceImplementation}
 
-        # self._api.add_resource(
-        #     UserController,
-        #     '/Logout',
-        #     endpoint='/Logout',
-        #     methods=[HttpMethods.GET],
-        #     resource_class_kwargs=user_controller_kwargs,
-        # )
+        self._api.add_resource(
+            UserController,
+            '/Logout/<username>',
+            endpoint='/Logout/<username>',
+            methods=[HttpMethods.DELETE],
+            resource_class_kwargs=user_controller_kwargs,
+        )
 
         self._api.add_resource(
             UserController,
