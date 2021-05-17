@@ -45,3 +45,16 @@ class ClientServiceImplementation(ClientService):
             response.append({"name": client.name, "image": client.image})
 
         return response
+
+    def delete(self, username):
+        """
+        Deletes an existing user and updates the DB.
+
+        Args:
+            username (str): user name to delete.
+
+        Returns:
+            str: empty string in case of success.
+        """
+
+        self._database_operations.delete(primary_key_value=username)

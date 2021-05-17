@@ -134,6 +134,14 @@ class FlaskAppWrapper(object):
             resource_class_kwargs=client_controller_kwargs,
         )
 
+        self._api.add_resource(
+            ClientController,
+            '/DeleteClient/<username>',
+            endpoint='/DeleteClient/<username>',
+            methods=[HttpMethods.DELETE],
+            resource_class_kwargs=client_controller_kwargs,
+        )
+
 
 flask = FlaskAppWrapper(application=app)
 

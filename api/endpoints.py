@@ -162,3 +162,19 @@ class ClientController(Controller):
                 class_type=self._client_service_implementation,
                 model=self._client_model
             ).get_many()
+
+    @response_decorator(code=HttpCodes.NO_CONTENT)
+    def delete(self, username):
+        """
+        Endpoint to delete an existing user from the server.
+
+        Args:
+            username (str): a user name provided from the URL.
+
+        Returns:
+            str: should return an empty string as part of the convention of rest APIs.
+        """
+        return ServiceClassWrapper(
+            class_type=self._client_service_implementation,
+            model=self._client_model
+        ).delete(username=username)
