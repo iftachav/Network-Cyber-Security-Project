@@ -7,7 +7,7 @@ from flask_mail import Message
 
 from flask import request
 from datetime import datetime
-
+from api.database import UserModel
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
 from api.database import DatabaseOperations
@@ -76,8 +76,7 @@ class UserServiceImplementation(UserService):
         Returns:
             str: empty string in case of success.
         """
-        # arad - hhgaa
-        # 126rdf - acjnlkahcla
+
         if "forgot_password" in update_user_body_request:
             user_to_update = self._database_operations.get(primary_key_value=username)
             if update_user_body_request.get("forgot_password") == "send":
@@ -176,8 +175,18 @@ class UserServiceImplementation(UserService):
         # attempt = LoginAttemptsServiceImplementation(LoginAttemptsModel()).get_one(username, request.remote_addr)
         # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
         #     raise UserIsLockedError(ip_addr)
-        user = self._database_operations.get(primary_key_value=username)
-        if (datetime.now() - user.last_try).seconds > LOGIN_LOCK:
+        user_row = self._database_operations.get(primary_key_value=username)
+        # user = UserModel()
+        # user.email = user_row.email
+        # user.is_active = user_row.is_active
+        # user.try_count = user_row.try_count
+        # user.last_try = user_row.last_try
+        # user.password = user_row.password
+        # user.SESSIONID = user_row.SESSIONID
+        # user.history = user_row.history
+        # user.username = user_row.username
+        user = user_row
+        if (datetime.now() - datetime.strptime(str(user.last_try), '%Y-%m-%d %H:%M:%S.%f')).seconds > LOGIN_LOCK:
             user.is_active = True
             user.try_count = 0
         if user.try_count >= LOGIN_ATTEMPTS:
@@ -186,10 +195,12 @@ class UserServiceImplementation(UserService):
             if not verify_password(stored_password=user.password, provided_password=password):
                 user.try_count += 1
                 user.last_try = datetime.now()
+                # self._database_operations.update(user)
                 self._database_operations.insert(updated_model=user)
                 raise InvalidPasswordProvided()
             user.try_count = 0
             user.SESSIONID = ''.join(random.choice(string.ascii_lowercase+string.digits) for _ in range(SESSIONID_LENGTH))
+            # self._database_operations.update(user)
             self._database_operations.insert(updated_model=user)
             # maybe it's better to return something else and not the password.
             return {"email": user.email, "password": user.password, "username": user.username, "SESSIONID": user.SESSIONID}

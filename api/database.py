@@ -1,6 +1,7 @@
 from sqlalchemy import DateTime
 from datetime import datetime
 from api.flask_config import app
+from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 from api.errors import (
     ResourceNotFoundError,
@@ -75,13 +76,15 @@ class DatabaseOperations(object):
         """
         if updated_model:
             new_model = updated_model
+
         else:
             new_model = self._model(**kwargs)
 
         self._model = new_model
 
         try:
-            db.session.add(self._model)
+            if not updated_model:
+                db.session.add(self._model)
             db.session.commit()
         except Exception as err:
             raise DatabaseInsertionError(error_msg=str(err))
@@ -100,9 +103,23 @@ class DatabaseOperations(object):
         Raises:
             ResourceNotFoundError: in case resource was not found on the server.
         """
+
+        # uncomment to make sqli vulnerable
+        # sql = text('select * from user_model where username="'+primary_key_value+'"')
+        # result = db.engine.execute(sql)
+        # found_model = result.fetchone()
+        # if found_model:
+        #     return found_model
+
         found_model = self._model.query.get(primary_key_value)
         if found_model:  # in case the found_model is None, it means that we couldn't find that resource.
             return found_model
+
+        sql = text('select * from user_model where username="' + primary_key_value + '"')
+        result = db.engine.execute(sql)
+        found_model = result.fetchone()
+        if found_model:
+            primary_key_value = found_model
 
         raise ResourceNotFoundError(resource=primary_key_value, resource_type=resource_type)
 

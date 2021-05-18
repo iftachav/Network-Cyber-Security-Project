@@ -1,4 +1,4 @@
-FILENAME = "api/passwordsDic.txt"  # can't use a password from the dictionary 
+FILENAME = "api/passwordsDic.txt"  # can't use a password from the dictionary
 PASSWORD_LEN = 5  # At least 5 characters ?
 REQUIREMENTS = [("Upper", True), ("Lower", True), ("Digits", True), ("Special", True)]
 HISTORY = 3  # can't use the 3 last passwords
