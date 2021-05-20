@@ -118,12 +118,6 @@ class DatabaseOperations(object):
         if found_model:  # in case the found_model is None, it means that we couldn't find that resource.
             return found_model
 
-        # sql = text('select * from user_model where username="' + primary_key_value + '"')
-        # result = db.engine.execute(sql)
-        # found_model = result.fetchone()
-        # if found_model:
-        #     primary_key_value = found_model
-
         raise ResourceNotFoundError(resource=model, resource_type=resource_type)
 
     def get_all(self):

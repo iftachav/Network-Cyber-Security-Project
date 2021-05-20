@@ -172,11 +172,7 @@ class UserServiceImplementation(UserService):
         """
         username = new_user_body_request.get("username")
         password = new_user_body_request.get("password")
-        # ip_addr = request.remote_addr
 
-        # attempt = LoginAttemptsServiceImplementation(LoginAttemptsModel()).get_one(username, request.remote_addr)
-        # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
-        #     raise UserIsLockedError(ip_addr)
         user = self._database_operations.get(primary_key_value=username)
 
         if (datetime.now() - datetime.strptime(str(user.last_try), '%Y-%m-%d %H:%M:%S.%f')).seconds > LOGIN_LOCK:

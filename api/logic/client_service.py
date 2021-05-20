@@ -22,13 +22,9 @@ class ClientServiceImplementation(ClientService):
 
         """uncomment to sqli """
         sql = text('INSERT INTO client_model (id,name,image) SELECT "'+new_client_body_request.get("id")+'","'+new_client_body_request.get("name")+'","'+new_client_body_request.get("image")+'" FROM user_model limit 1;')
-        # sql = text('DROP TABLE client_model')
-        # print(sql)
-        # sql = text('INSERT INTO client_model (id,name,image) SELECT "1", username, "iftach" FROM user_model limit 1;' -- '","username","mashu" FROM user_model limit 1;)
+
         result = db.engine.execute(sql)
         client_model = self._database_operations.get(new_client_body_request.get("id"))
-        # if result.fetchone():
-        #     model = result.fetchone()
 
         """uncomment to protect sqli """
         # self._database_operations.insert(**new_client_body_request)
