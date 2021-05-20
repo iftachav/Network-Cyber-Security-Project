@@ -106,11 +106,10 @@ class DatabaseOperations(object):
 
         # check if username exist :
 
-        # uncomment to make sqli vulnerable
-        sql = text('select username from user_model where username="'+primary_key_value+'"')
         model = primary_key_value
+        """ uncomment to make sqli vulnerable """
+        sql = text('select username from user_model where username="'+primary_key_value+'"')
         result = db.engine.execute(sql)
-        # found_model = result.fetchone()
         if result.fetchone():
             model = result.fetchone()
 
