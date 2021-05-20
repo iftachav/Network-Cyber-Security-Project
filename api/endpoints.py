@@ -59,6 +59,14 @@ class UserController(Controller):
         """
         print("endpoints:response_decorator, request:", request)
         print("endpoints:response_decorator, json:", request.json)
+        rule = request.url_rule
+        # print(rule, ",", str(rule))
+        if "Login" in str(rule):
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).get_one(**request.json)
+
         if "check_session" in request.json:
             print("calling check_session")
             return ServiceClassWrapper(
@@ -84,10 +92,11 @@ class UserController(Controller):
             dict/list[dict]: Returns either all users or a single user.
         """
         if username:  # get single user
-            return ServiceClassWrapper(
-                class_type=self._user_service_implementation,
-                model=self._user_model
-            ).get_one(username=username, password=password)
+            pass
+            # return ServiceClassWrapper(
+            #     class_type=self._user_service_implementation,
+            #     model=self._user_model
+            # ).get_one(username=username, password=password)
         else:  # get all users
             return ServiceClassWrapper(
                 class_type=self._user_service_implementation,

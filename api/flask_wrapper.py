@@ -71,11 +71,19 @@ class FlaskAppWrapper(object):
             resource_class_kwargs=user_controller_kwargs,
         )
 
+        # self._api.add_resource(
+        #     UserController,
+        #     '/Login/<username>/<password>',
+        #     endpoint='/Login/<username>/<password>',
+        #     methods=[HttpMethods.GET],
+        #     resource_class_kwargs=user_controller_kwargs,
+        # )
+
         self._api.add_resource(
             UserController,
-            '/Login/<username>/<password>',
-            endpoint='/Login/<username>/<password>',
-            methods=[HttpMethods.GET],
+            '/Login',
+            endpoint='/Login',
+            methods=[HttpMethods.POST],
             resource_class_kwargs=user_controller_kwargs,
         )
 

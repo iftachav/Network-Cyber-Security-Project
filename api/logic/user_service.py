@@ -162,7 +162,7 @@ class UserServiceImplementation(UserService):
 
         return response
 
-    def get_one(self, username, password):
+    def get_one(self, **new_user_body_request):
         """
         Get a user by a username & password from the DB..
 
@@ -170,22 +170,15 @@ class UserServiceImplementation(UserService):
              username (str): user name to get.
              password (str): user password to verify.
         """
+        username = new_user_body_request.get("username")
+        password = new_user_body_request.get("password")
         # ip_addr = request.remote_addr
 
         # attempt = LoginAttemptsServiceImplementation(LoginAttemptsModel()).get_one(username, request.remote_addr)
         # if attempt["num_attempts"] > LOGIN_ATTEMPTS:
         #     raise UserIsLockedError(ip_addr)
-        user_row = self._database_operations.get(primary_key_value=username)
-        # user = UserModel()
-        # user.email = user_row.email
-        # user.is_active = user_row.is_active
-        # user.try_count = user_row.try_count
-        # user.last_try = user_row.last_try
-        # user.password = user_row.password
-        # user.SESSIONID = user_row.SESSIONID
-        # user.history = user_row.history
-        # user.username = user_row.username
-        user = user_row
+        user = self._database_operations.get(primary_key_value=username)
+
         if (datetime.now() - datetime.strptime(str(user.last_try), '%Y-%m-%d %H:%M:%S.%f')).seconds > LOGIN_LOCK:
             user.is_active = True
             user.try_count = 0
