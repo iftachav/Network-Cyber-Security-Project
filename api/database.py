@@ -109,10 +109,10 @@ class DatabaseOperations(object):
         model = primary_key_value
 
         """ uncomment to make sqli vulnerable """
-        # sql = text('select username from user_model where username="'+primary_key_value+'"')
-        # result = db.engine.execute(sql)
-        # if result.fetchone():
-        #     model = result.fetchone()
+        sql = text('select username from user_model where username="'+primary_key_value+'"')
+        result = db.engine.execute(sql)
+        if result.fetchone():
+            model = result.fetchone()
 
         # get user :
         found_model = self._model.query.get(str(primary_key_value))
@@ -147,4 +147,3 @@ class DatabaseOperations(object):
             db.session.commit()
         except Exception as err:
             raise DatabaseDeletionError(error_msg=str(err))
-
