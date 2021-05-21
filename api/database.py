@@ -147,3 +147,4 @@ class DatabaseOperations(object):
             db.session.commit()
         except Exception as err:
             raise DatabaseDeletionError(error_msg=str(err))
+
