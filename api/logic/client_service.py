@@ -28,7 +28,7 @@ class ClientServiceImplementation(ClientService):
 
         """uncomment to protect sqli """
         # self._database_operations.insert(**new_client_body_request)
-        #client_model = self._database_operations.model
+        # client_model = self._database_operations.model
 
         return {"id": client_model.id, "name": client_model.name, "image": client_model.image}
 

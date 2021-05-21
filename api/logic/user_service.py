@@ -16,6 +16,9 @@ from api.flask_config import mail
 
 from api.password_config import *
 
+from sqlalchemy import text
+from api.database import db
+
 SESSIONID_LENGTH = 26
 
 
@@ -36,7 +39,8 @@ class UserServiceImplementation(UserService):
         else:
             raise InvalidPasswordProvided()  # BadSessionId
 
-    @validate_input_data("email", "username", "password")
+    """uncomment to protect register sqli """
+    # @validate_input_data("email", "username", "password")
     def create(self, **new_user_body_request):
         """
         Creates a new user and inserts it into the DB.
@@ -46,7 +50,6 @@ class UserServiceImplementation(UserService):
             username (str): user name.
             password (str): non-hashed password.
         """
-        # print("user service:create", new_user_body_request)
         new_user_body_request["password"] = hash_password(password=new_user_body_request.get("password"))
         new_user_body_request["history"] = ""
         new_user_body_request["SESSIONID"] = ""
@@ -54,9 +57,14 @@ class UserServiceImplementation(UserService):
         new_user_body_request["try_count"] = 0
         new_user_body_request["is_active"] = True
 
-        # print("user service:create", new_user_body_request)
-        self._database_operations.insert(**new_user_body_request)
-        # print("user service:create", new_user_body_request)
+        """uncomment to register sqli """
+        sql_query = 'INSERT INTO user_model (history, SESSIONID, last_try, is_active, try_count, password, username, email) SELECT "{0}", "{1}", {2}, {3}, {4}, "{5}", "{6}", "{7}" FROM user_model limit 1;'.format(new_user_body_request.get("history"), new_user_body_request.get("SESSIONID"), "NULL", new_user_body_request.get("is_active"), new_user_body_request.get("try_count"), new_user_body_request.get("password"), new_user_body_request.get("username"), new_user_body_request.get("email"))
+        sql = text(sql_query)
+        result = db.engine.execute(sql)
+
+        """uncomment to protect register sqli """
+        # self._database_operations.insert(**new_user_body_request)
+
         return new_user_body_request    # maybe it's better to return something else and not the password.
 
 
@@ -174,6 +182,10 @@ class UserServiceImplementation(UserService):
         password = new_user_body_request.get("password")
 
         user = self._database_operations.get(primary_key_value=username)
+
+        """uncomment to register sqli vulnerable"""
+        if not user.last_try:
+            user.last_try = datetime.now()
 
         if (datetime.now() - datetime.strptime(str(user.last_try), '%Y-%m-%d %H:%M:%S.%f')).seconds > LOGIN_LOCK:
             user.is_active = True
