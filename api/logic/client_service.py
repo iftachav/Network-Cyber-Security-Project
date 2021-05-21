@@ -22,7 +22,6 @@ class ClientServiceImplementation(ClientService):
 
         """uncomment to sqli """
         sql = text('INSERT INTO client_model (id,name,image) SELECT "'+new_client_body_request.get("id")+'","'+new_client_body_request.get("name")+'","'+new_client_body_request.get("image")+'" FROM user_model limit 1;')
-
         result = db.engine.execute(sql)
         client_model = self._database_operations.get(new_client_body_request.get("id"))
 

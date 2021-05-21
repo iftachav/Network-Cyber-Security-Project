@@ -107,6 +107,7 @@ class DatabaseOperations(object):
         # check if username exist :
 
         model = primary_key_value
+
         """ uncomment to make sqli vulnerable """
         sql = text('select username from user_model where username="'+primary_key_value+'"')
         result = db.engine.execute(sql)
