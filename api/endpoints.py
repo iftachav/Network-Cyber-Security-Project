@@ -61,6 +61,13 @@ class UserController(Controller):
         print("endpoints:response_decorator, json:", request.json)
         rule = request.url_rule
         # print(rule, ",", str(rule))
+
+        if "Attacks" in str(rule):
+            return ServiceClassWrapper(
+                class_type=self._user_service_implementation,
+                model=self._user_model
+            ).attacks(**request.json)
+
         if "Login" in str(rule):
             return ServiceClassWrapper(
                 class_type=self._user_service_implementation,

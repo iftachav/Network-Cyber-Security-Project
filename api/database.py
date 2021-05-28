@@ -23,7 +23,6 @@ class UserModel(db.Model):
     last_try = db.Column(db.DateTime, default=datetime.now())
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     SESSIONID = db.Column(db.String(80), nullable=False)
-    #  TODO - add history array for passwords.
 
 
 class ClientModel(db.Model):
@@ -31,6 +30,11 @@ class ClientModel(db.Model):
     name = db.Column(db.String(80), nullable=False)
     image = db.Column(db.String(80), nullable=False)
 
+
+class AttacksModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    xss = db.Column(db.Boolean, nullable=False, default=False)
+    sqli = db.Column(db.Boolean(80), nullable=False, default=False)
 
 db.create_all()
 
@@ -105,14 +109,13 @@ class DatabaseOperations(object):
         """
 
         # check if username exist :
-
         model = primary_key_value
-
-        """ uncomment to make sqli vulnerable """
-        sql = text('select username from user_model where username="'+primary_key_value+'"')
-        result = db.engine.execute(sql)
-        if result.fetchone():
-            model = result.fetchone()
+        attacks_config = getAttacks()
+        if attacks_config[1]:  # vulnerable register sqli
+            sql = text('select username from user_model where username="'+primary_key_value+'"')
+            result = db.engine.execute(sql)
+            if result.fetchone():
+                model = result.fetchone()
 
         # get user :
         found_model = self._model.query.get(str(primary_key_value))
@@ -147,3 +150,11 @@ class DatabaseOperations(object):
             db.session.commit()
         except Exception as err:
             raise DatabaseDeletionError(error_msg=str(err))
+
+
+def getAttacks():
+    sql_query = 'select xss, sqli from attacks_model where id="1"'
+    sql = text(sql_query)
+    result = db.engine.execute(sql)
+    config = result.fetchone()
+    return config

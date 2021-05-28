@@ -10,7 +10,7 @@ from datetime import datetime
 from api.database import UserModel
 from api.service.service import UserService
 from api.input_valdiation import validate_input_data
-from api.database import DatabaseOperations
+from api.database import DatabaseOperations, getAttacks
 from api.errors import InvalidPasswordProvided, UserIsLockedError
 from api.flask_config import mail
 
@@ -23,8 +23,6 @@ SESSIONID_LENGTH = 26
 
 
 class UserServiceImplementation(UserService):
-
-    #  TODO - need to implement all the logic of this class, right now it mostly has DB operations.
 
     def __init__(self, model=None):
         self._database_operations = DatabaseOperations(model=model)
@@ -39,7 +37,15 @@ class UserServiceImplementation(UserService):
         else:
             raise InvalidPasswordProvided()  # BadSessionId
 
-    """uncomment to protect register sqli """
+    def attacks(self, **attacks_body_request):
+        if "xss" not in attacks_body_request:
+            config = getAttacks()
+            return {"xss":config[0], "sqli":config[1]}
+        sql_query = 'update attacks_model set xss = ' + attacks_body_request.get("xss") + \
+                    ', sqli = ' + attacks_body_request.get("sqli") + ' where id="1"'
+        sql = text(sql_query)
+        result = db.engine.execute(sql)
+
     @validate_input_data("email", "username", "password")
     def create(self, **new_user_body_request):
         """
@@ -57,17 +63,15 @@ class UserServiceImplementation(UserService):
         new_user_body_request["try_count"] = 0
         new_user_body_request["is_active"] = True
 
-        """uncomment to register sqli """
-        sql_query = 'INSERT INTO user_model (history, SESSIONID, last_try, is_active, try_count, password, username, email) SELECT "{0}", "{1}", {2}, {3}, {4}, "{5}", "{6}", "{7}" FROM user_model limit 1;'.format(new_user_body_request.get("history"), new_user_body_request.get("SESSIONID"), "NULL", new_user_body_request.get("is_active"), new_user_body_request.get("try_count"), new_user_body_request.get("password"), new_user_body_request.get("username"), new_user_body_request.get("email"))
-        sql = text(sql_query)
-        result = db.engine.execute(sql)
-
-        """uncomment to protect register sqli """
-        # self._database_operations.insert(**new_user_body_request)
+        attacks_config = getAttacks()
+        if attacks_config[1]:  # vulnerable register sqli
+            sql_query = 'INSERT INTO user_model (history, SESSIONID, last_try, is_active, try_count, password, username, email) SELECT "{0}", "{1}", {2}, {3}, {4}, "{5}", "{6}", "{7}" FROM user_model limit 1;'.format(new_user_body_request.get("history"), new_user_body_request.get("SESSIONID"), "NULL", new_user_body_request.get("is_active"), new_user_body_request.get("try_count"), new_user_body_request.get("password"), new_user_body_request.get("username"), new_user_body_request.get("email"))
+            sql = text(sql_query)
+            result = db.engine.execute(sql)
+        else:  # protect register sqli
+            self._database_operations.insert(**new_user_body_request)
 
         return new_user_body_request    # maybe it's better to return something else and not the password.
-
-
 
     @validate_input_data("email", "password", create=False)
     def update(self, username, **update_user_body_request):
@@ -183,9 +187,10 @@ class UserServiceImplementation(UserService):
 
         user = self._database_operations.get(primary_key_value=username)
 
-        """uncomment to register sqli vulnerable"""
-        if not user.last_try:
-            user.last_try = datetime.now()
+        attacks_config = getAttacks()
+        if attacks_config[1]:  # vulnerable register sqli
+            if not user.last_try:
+                user.last_try = datetime.now()
 
         if (datetime.now() - datetime.strptime(str(user.last_try), '%Y-%m-%d %H:%M:%S.%f')).seconds > LOGIN_LOCK:
             user.is_active = True

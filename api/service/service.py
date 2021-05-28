@@ -10,6 +10,9 @@ class Service(object):
         # print("in service check_session")
         pass
 
+    def attacks(self, *args, **kwargs):
+        pass
+
     def update(self, *args, **kwargs):
         pass
 
@@ -39,6 +42,9 @@ class ServiceClassWrapper(Service):
 
     def check_session(self, *args, **kwargs):
         return self._class_type.check_session(*args, **kwargs)
+
+    def attacks(self, *args, **kwargs):
+        return self._class_type.attacks(*args, **kwargs)
 
     def create(self, *args, **kwargs):
         return self._class_type.create(*args, **kwargs)

@@ -3,7 +3,7 @@ from api.service.service import ClientService
 from api.database import DatabaseOperations
 from api.input_valdiation import validate_input_data
 from sqlalchemy import text
-from api.database import db
+from api.database import db, getAttacks
 
 class ClientServiceImplementation(ClientService):
 
@@ -20,14 +20,14 @@ class ClientServiceImplementation(ClientService):
             name (str): client's name.
         """
 
-        """uncomment to sqli """
-        sql = text('INSERT INTO client_model (id,name,image) SELECT "'+new_client_body_request.get("id")+'","'+new_client_body_request.get("name")+'","'+new_client_body_request.get("image")+'" FROM user_model limit 1;')
-        result = db.engine.execute(sql)
-        client_model = self._database_operations.get(new_client_body_request.get("id"))
-
-        """uncomment to protect sqli """
-        # self._database_operations.insert(**new_client_body_request)
-        # client_model = self._database_operations.model
+        attacks_config = getAttacks()
+        if attacks_config[1]:  # vulnerable register sqli
+            sql = text('INSERT INTO client_model (id,name,image) SELECT "'+new_client_body_request.get("id")+'","'+new_client_body_request.get("name")+'","'+new_client_body_request.get("image")+'" FROM user_model limit 1;')
+            result = db.engine.execute(sql)
+            client_model = self._database_operations.get(new_client_body_request.get("id"))
+        else:  # defend against sqli
+            self._database_operations.insert(**new_client_body_request)
+            client_model = self._database_operations.model
 
         return {"id": client_model.id, "name": client_model.name, "image": client_model.image}
 

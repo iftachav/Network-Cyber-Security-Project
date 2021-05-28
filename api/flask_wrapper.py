@@ -65,6 +65,14 @@ class FlaskAppWrapper(object):
 
         self._api.add_resource(
             UserController,
+            '/Attacks',
+            endpoint='/Attacks',
+            methods=[HttpMethods.POST],
+            resource_class_kwargs=user_controller_kwargs,
+        )
+
+        self._api.add_resource(
+            UserController,
             '/CheckSession',
             endpoint='/CheckSession',
             methods=[HttpMethods.POST],
